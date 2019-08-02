@@ -81,7 +81,6 @@ void adaq2root(TString file, Double_t baseline, Double_t polarity, Int_t wavefor
     T->GetEntry(eventNumber);
     readWaveform = *Waveforms[0];
     waveform.clear();
-
     for (Int_t i = 0; i < readWaveform.size(); i++)
     {
       temp = (readWaveform[i]*1.0-baseline)*polarity;
