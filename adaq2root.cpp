@@ -10,10 +10,10 @@ void adaq2root(TString file, Double_t baseline, Double_t polarity, Int_t wavefor
 {
   //Convert adaq to root file
   //TString file: location of file to convert
-  //Double_t baseline: fixed baseline estimate. Get this number from watching run in adaq gui
+  //Double_t baseline: fixed baseline estimate. Get this number from watching run in adaq gui. Best used with an external trigger
   //Double_t polarity: -1 for a negative going pulse, 1 for a positive going pulse
   //Accumulator windows take the raw integral in that region
-  //Accumulator 0 should be pre-signal
+  //Accumulator 0 should be pre-signal. Can use this to get information about the baseline. If using an internal trigger, will want to take this value and divide by the length of accumulator0 to get the average baseline. Same as taking the average over the pre-signal region
   //Accumulator 1 should be signal
   //Accumulator 2 should be post-signal
   //Int_t waveformFrequency: how many waveforms to store. If 0 is chosen, do not save waveforms. If 1 is chosen, save all waveforms
@@ -31,6 +31,7 @@ void adaq2root(TString file, Double_t baseline, Double_t polarity, Int_t wavefor
   Double_t accumulator2 = 0;
   Double_t amplitude = 0; //Baseline subtracted max amplitude of waveform
   Int_t maxAmplitudePosition = 0;
+  Double_t timestamp;
   vector<UShort_t> waveform;
   const Int_t numberEntries = T->GetEntries();
 
@@ -56,9 +57,12 @@ void adaq2root(TString file, Double_t baseline, Double_t polarity, Int_t wavefor
   tree->Branch("accumulator2", &accumulator2);
   tree->Branch("amplitude", &amplitude);
   tree->Branch("maxAmplitudePosition", &maxAmplitudePosition);
+  tree->Branch("timestamp", &timestamp);
 
   //Read in data from adaq file
   vector<UShort_t> *Waveforms[8];
+  Int_t TimeStamp;
+  T->SetBranchAddress("WaveformDataCh0.TimeStamp", &TimeStamp);
   T->SetBranchAddress("WaveformCh0", &Waveforms[0]); //Currently only reads from channel 0
   vector<UShort_t> readWaveform;
 
@@ -79,6 +83,7 @@ void adaq2root(TString file, Double_t baseline, Double_t polarity, Int_t wavefor
       printf("Currently on event %d of %d\n", eventNumber, numberEntries);
     }
     T->GetEntry(eventNumber);
+    timestamp = TimeStamp;
     readWaveform = *Waveforms[0];
     waveform.clear();
     for (Int_t i = 0; i < readWaveform.size(); i++)
