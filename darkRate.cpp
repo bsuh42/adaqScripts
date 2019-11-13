@@ -56,10 +56,10 @@ void darkRate(TString file, const Double_t trigger, Int_t roiStart = 0, Int_t ro
     }
     T->GetEntry(eventNumber);
     readWaveform = *waveform;
-
+    pulsing = 0;
     for (Int_t i = roiStart; i < roiEnd; i++)
     {
-      pulsing = 0;
+      //pulsing = 0;
       temp = (readWaveform[i]-baseline*1.0)*polarity*1.0;
       if (!pulsing)
       {

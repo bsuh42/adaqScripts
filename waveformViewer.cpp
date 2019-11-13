@@ -17,6 +17,7 @@ void viewWaveform(TString file, const Int_t waveformNumber=0)
   Double_t baseline = 0;
   Double_t polarity = 0;
   Double_t temp = 0;
+  Double_t integral = 0;
 
   vector<UShort_t> *waveform = 0;
   T->SetBranchAddress("waveform", &waveform);
@@ -35,11 +36,18 @@ void viewWaveform(TString file, const Int_t waveformNumber=0)
  {
    temp = (readWaveform[i]-baseline)*polarity;
    hist->Fill(i*4, temp);
+   /*
+   if (i >= 365 && i <= 400)
+   {
+     integral += temp;
+   }*/
+   integral += temp;
  }
  
  TCanvas *c1 = new TCanvas("c1", "", 1000, 600);
  gStyle->SetOptStat(0);
  hist->GetXaxis()->SetTitle("Time(ns)");
  hist->Draw("hist");
+ printf("Integral = %f\n", integral);
  c1->Update();
 }

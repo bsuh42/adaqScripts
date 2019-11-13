@@ -4,7 +4,7 @@ using namespace std;
 #include <cmath>
 #include <vector>
 
-void spectra(TString file, Double_t lowerBound, Double_t upperBound)
+void fitSpectra(TString file, Double_t lowerBound, Double_t upperBound)
 {
   //Take a spectra and fit peak. Largely meant for spe
   TFile *F = new TFile(file);
