@@ -4,12 +4,16 @@ using namespace std;
 #include <cmath>
 #include <vector>
 
-void fitSpectra(TString file, Double_t lowerBound, Double_t upperBound)
+void fitSpectra(TString file, Double_t lowerBound, Double_t upperBound, Double_t rebinFactor = 1)
 {
-  //Take a spectra and fit peak. Largely meant for spe
+  //Take a spectra and fit peak for spe. Can also rebin hist
   TFile *F = new TFile(file);
-  TH1D *h1 = new TH1D("", "", 4000, -1000, 3000);
-  h1= (TH1D*)F->Get("hist");
+  const Int_t lowerHist = -1000;
+  const Int_t upperHist = 3000;
+  const Int_t histLength = upperHist-lowerHist;
+  TH1D *h1 = new TH1D("", "", histLength, lowerHist, upperHist);
+  h1 = (TH1D*)F->Get("hist");
+  h1->Rebin(rebinFactor);
 
   TF1 *combinedFit = new TF1("combinedFit", "expo(0)+gaus(3)", lowerBound, upperBound);
   TF1 *f1 = new TF1("f1", "expo", lowerBound, upperBound);
@@ -24,5 +28,7 @@ void fitSpectra(TString file, Double_t lowerBound, Double_t upperBound)
 
   TCanvas *c1 = new TCanvas("c1", "", 1000, 600);
   gStyle->SetOptStat(0);
-  h1->Draw("hist");  
+  h1->Draw("hist");
+  combinedFit->Draw("same");
+  c1->Update();
 }

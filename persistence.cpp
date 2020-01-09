@@ -7,39 +7,41 @@ using namespace std;
 void persistence (TString file)
 {
   //Show behaviour of waveform over time as well as average waveform
+  //Outputs multiple plots
 
-  //Load file and waveform
+  //Load file and tree
   TFile *F = new TFile(file);
   TTree *T = (TTree *)F->Get("waveformTree");
-
-  vector<UShort_t> *waveform = 0;
-  vector<UShort_t> readWaveform;
 
   //Variables
   Double_t polarity = 0;
   Double_t baseline = 0;
   Double_t temp = 0;
   Int_t counter = 0;
+  vector<UShort_t> *waveform = 0;
+  vector<UShort_t> readWaveform;
+  const Double_t binSize = 4.0; //Time length of each bin, ns
 
+  //Tree branches
   T->SetBranchAddress("waveform", &waveform);
   T->SetBranchAddress("polarity", &polarity);
   T->SetBranchAddress("baseline", &baseline);
   T->GetEntry(0);
   readWaveform = *waveform;
 
-  //Settings for histogram
+  //Settings for histogram. Needed to get first waveform
   const Int_t waveformStart = 0;
-  const Int_t waveformEnd = readWaveform.size()*4;
-  const Int_t waveformLength = (waveformEnd-waveformStart)/4;
+  const Int_t waveformEnd = readWaveform.size()*binSize;
+  const Int_t waveformLength = (waveformEnd-waveformStart)/binSize;
 
   const Int_t waveformLower = -50;
   const Int_t waveformUpper = 2000;
-  const Int_t waveformAmplitude = waveformUpper-waveformLower;
+  const Int_t waveformAmplitude = waveformUpper-waveformLower; //for persistence plot, need to know height of waveform
 
   TH2D* persistHist = new TH2D("Persistence", "Persistence", waveformLength, waveformStart, waveformEnd, waveformAmplitude, waveformLower, waveformUpper);
 
-  //TProfile shows the average waveform
-  TProfile* hprof = new TProfile("AverageWaveform", "AverageWaveform", waveformLength, waveformStart, waveformEnd);
+  //TProfile shows average waveform
+  TProfile *hprof = new TProfile("Average Waveform", "Average Waveform", waveformLength, waveformStart, waveformEnd);
 
   const Int_t numberEntries = T->GetEntries();
   for (Int_t eventNumber = 0; eventNumber < numberEntries; eventNumber++)
@@ -54,13 +56,15 @@ void persistence (TString file)
     for (Int_t i = 0; i < readWaveform.size(); i++)
     {
       temp = (readWaveform[i]-baseline*1.0)*polarity*1.0;
-      persistHist->Fill(i*4, temp);
-      hprof->Fill(i*4, temp);
+      persistHist->Fill(i*binSize, temp);
+      hprof->Fill(i*binSize, temp);
     }
   }
 
+  //Draw both plots
   TCanvas *c1 = new TCanvas("c1", "", 1000, 600);
   TCanvas *c2 = new TCanvas("c2", "", 1000, 600);
+  
   c1->cd();
   gStyle->SetOptStat(0);
   c1->SetLogz();
